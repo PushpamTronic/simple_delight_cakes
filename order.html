@@ -22,14 +22,13 @@
           />
           Simple Delight Cakes
         </a>
-        <a class="button tertiary" href="index.html">← Back to Home</a>
+        <a class="button tertiary" href="index.html">← Home</a>
       </div>
     </header>
 
     <main class="order-page">
       <section class="order-hero">
         <div class="order-hero-copy">
-          <p class="eyebrow">Order with WhatsApp</p>
           <h1>Order Your Cake</h1>
           <p>
             Complete the form and WhatsApp will open with your order message
@@ -47,6 +46,8 @@
                 type="text"
                 name="name"
                 required
+                pattern="[A-Za-z ]+"
+                title="Name should contain only letters and spaces"
                 placeholder="Ex: Simple"
               />
             </label>
@@ -57,6 +58,8 @@
                 type="tel"
                 name="phone"
                 required
+                pattern="\d{10}"
+                title="Enter a 10-digit phone number"
                 placeholder="Ex: 9643350889"
               />
             </label>
@@ -102,73 +105,44 @@
               </select>
             </label>
 
-            <div style="margin-bottom: 16px">
-              <label
-                for="delivery-date"
-                style="display: block; font-weight: 700; margin-bottom: 8px"
-                >Delivery date</label
-              >
-              <input type="date" id="delivery-date" name="delivery-date" style="width: 100%" />
+            <label>
+              Delivery Address
+              <textarea
+                name="delivery-address"
+                rows="3"
+                placeholder="Enter delivery address here"
+                required
+              ></textarea>
+            </label>
+
+            <div
+              style="
+                display: flex;
+                gap: 12px;
+                flex-wrap: wrap;
+                margin-bottom: 16px;
+              "
+            >
+              <div style="flex: 1 1 220px; min-width: 180px">
+                <label for="delivery-date">Delivery date</label>
+                <input
+                  type="date"
+                  id="delivery-date"
+                  name="delivery-date"
+                  style="width: 100%"
+                />
+              </div>
+              <div style="flex: 1 1 220px; min-width: 180px">
+                <label for="delivery-time">Delivery time</label>
+                <select
+                  id="delivery-time"
+                  name="delivery-time"
+                  style="width: 100%"
+                ></select>
+              </div>
             </div>
 
-            <div style="margin-bottom: 16px">
-              <label
-                for="delivery-time"
-                style="display: block; font-weight: 700; margin-bottom: 8px"
-                >Delivery time</label
-              >
-              <select id="delivery-time" name="delivery-time" style="width: 100%">
-                <option value="" selected disabled>Select time</option>
-                <option>12:00 AM</option>
-                <option>12:30 AM</option>
-                <option>1:00 AM</option>
-                <option>1:30 AM</option>
-                <option>2:00 AM</option>
-                <option>2:30 AM</option>
-                <option>3:00 AM</option>
-                <option>3:30 AM</option>
-                <option>4:00 AM</option>
-                <option>4:30 AM</option>
-                <option>5:00 AM</option>
-                <option>5:30 AM</option>
-                <option>6:00 AM</option>
-                <option>6:30 AM</option>
-                <option>7:00 AM</option>
-                <option>7:30 AM</option>
-                <option>8:00 AM</option>
-                <option>8:30 AM</option>
-                <option>9:00 AM</option>
-                <option>9:30 AM</option>
-                <option>10:00 AM</option>
-                <option>10:30 AM</option>
-                <option>11:00 AM</option>
-                <option>11:30 AM</option>
-                <option>12:00 PM</option>
-                <option>12:30 PM</option>
-                <option>1:00 PM</option>
-                <option>1:30 PM</option>
-                <option>2:00 PM</option>
-                <option>2:30 PM</option>
-                <option>3:00 PM</option>
-                <option>3:30 PM</option>
-                <option>4:00 PM</option>
-                <option>4:30 PM</option>
-                <option>5:00 PM</option>
-                <option>5:30 PM</option>
-                <option>6:00 PM</option>
-                <option>6:30 PM</option>
-                <option>7:00 PM</option>
-                <option>7:30 PM</option>
-                <option>8:00 PM</option>
-                <option>8:30 PM</option>
-                <option>9:00 PM</option>
-                <option>9:30 PM</option>
-                <option>10:00 PM</option>
-                <option>10:30 PM</option>
-                <option>11:00 PM</option>
-                <option>11:30 PM</option>
-              </select>
-            </div>
+            <p id="summary"></p>
 
             <div style="margin-bottom: 16px">
               <p class="helper-text">
@@ -223,6 +197,85 @@
     </footer>
 
     <script>
+      const dateInput = document.getElementById("delivery-date");
+      const timeSelect = document.getElementById("delivery-time");
+      const summary = document.getElementById("summary");
+
+      // All 48 half-hour slots
+      const allSlots = [];
+      for (let h = 0; h < 24; h++) {
+        [0, 30].forEach((m) => {
+          const hh = h % 12 === 0 ? 12 : h % 12;
+          const mm = m === 0 ? "00" : "30";
+          const ampm = h < 12 ? "AM" : "PM";
+          allSlots.push({
+            label: `${hh}:${mm} ${ampm}`,
+            value: String(h).padStart(2, "0") + ":" + mm,
+            minutes: h * 60 + m,
+          });
+        });
+      }
+
+      function toDateStr(d) {
+        return d.toISOString().split("T")[0];
+      }
+
+      // Returns the earliest allowed DateTime (now + 4hrs, rounded up to :00 or :30)
+      function getMinDateTime() {
+        const now = new Date();
+        now.setHours(now.getHours() + 4);
+        const m = now.getMinutes();
+        if (m > 0 && m <= 30) {
+          now.setMinutes(30, 0, 0);
+        } else if (m > 30) {
+          now.setHours(now.getHours() + 1);
+          now.setMinutes(0, 0, 0);
+        } else {
+          now.setMinutes(0, 0, 0);
+        }
+        return now;
+      }
+
+      function populateTime(selectedDate) {
+        const minDT = getMinDateTime();
+        const minDate = toDateStr(minDT);
+        const minMinutes =
+          selectedDate <= minDate
+            ? minDT.getHours() * 60 + minDT.getMinutes()
+            : 0;
+
+        timeSelect.innerHTML = "";
+        allSlots.forEach((slot) => {
+          if (slot.minutes >= minMinutes) {
+            const opt = document.createElement("option");
+            opt.value = slot.value;
+            opt.textContent = slot.label;
+            timeSelect.appendChild(opt);
+          }
+        });
+
+        if (timeSelect.options.length === 0) {
+          const emptyOption = document.createElement("option");
+          emptyOption.textContent = "No available times";
+          emptyOption.disabled = true;
+          emptyOption.selected = true;
+          timeSelect.appendChild(emptyOption);
+        }
+      }
+
+      function setupDate() {
+        const minDT = getMinDateTime();
+        const minDate = toDateStr(minDT);
+        dateInput.setAttribute("min", minDate);
+        if (!dateInput.value || dateInput.value < minDate) {
+          dateInput.value = minDate;
+        }
+        populateTime(dateInput.value);
+      }
+
+      dateInput.addEventListener("change", () => populateTime(dateInput.value));
+      setupDate();
+
       document
         .getElementById("cakeOrderForm")
         .addEventListener("submit", function (event) {
@@ -234,9 +287,21 @@
           const cakeType = data.get("cakeType").trim();
           const cakeFlavour = data.get("cakeFlavour").trim();
           const cakeSize = data.get("cakeSize").trim();
-          const deliveryDate = data.get("delivery-date").trim();
           const deliveryTime = data.get("delivery-time").trim();
+          const deliveryDate = data.get("delivery-date").trim();
+          const deliveryAddress = data.get("delivery-address").trim();
           const notes = data.get("notes").trim();
+
+          const nameValid = /^[A-Za-z ]+$/.test(name);
+          const phoneValid = /^\d{10}$/.test(phone);
+          if (!nameValid) {
+            alert("Name should contain only letters and spaces.");
+            return;
+          }
+          if (!phoneValid) {
+            alert("Mobile number must contain exactly 10 digits.");
+            return;
+          }
 
           const message = `Hello,%20I%20would%20like%20to%20order%20a%20cake.%0A%0AName:%20${encodeURIComponent(name)}%0APhone:%20${encodeURIComponent(phone)}%0ACake%20Type:%20${encodeURIComponent(cakeType)}%0AFlavour:%20${encodeURIComponent(cakeFlavour)}%0ASize:%20${encodeURIComponent(cakeSize)}%0ADelivery%20Date:%20${encodeURIComponent(deliveryDate)}%0ADelivery%20Time:%20${encodeURIComponent(deliveryTime)}%0ANotes:%20${encodeURIComponent(notes)}%0A%0APlease%20confirm%20availability.`;
           const waUrl = `https://wa.me/919643350889?text=${message}`;
