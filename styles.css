@@ -307,9 +307,32 @@ textarea {
 
 .special-image-2 {
   min-height: 160px;
+  width: 100%;
   border-radius: 28px;
   background: url('Cake_and_more.png') center/cover no-repeat;
+  background-size: cover;
   box-shadow: inset 0 0 0 1px rgba(255,255,255,0.22);
+}
+
+.special-image {
+  width: 100%;
+  background-size: cover;
+}
+
+@media (max-width: 980px) {
+  .special-image-2 {
+    min-height: 260px;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+}
+
+@media (max-width: 640px) {
+  .special-image,
+  .special-image-2 {
+    min-height: 240px;
+  }
 }
 
 .build-copy {
