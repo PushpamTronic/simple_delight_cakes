@@ -303,7 +303,7 @@
             return;
           }
 
-          const message = `Hello,%20I%20would%20like%20to%20order%20a%20cake.%0A%0AName:%20${encodeURIComponent(name)}%0APhone:%20${encodeURIComponent(phone)}%0ACake%20Type:%20${encodeURIComponent(cakeType)}%0AFlavour:%20${encodeURIComponent(cakeFlavour)}%0ASize:%20${encodeURIComponent(cakeSize)}%0ADelivery%20Date:%20${encodeURIComponent(deliveryDate)}%0ADelivery%20Time:%20${encodeURIComponent(deliveryTime)}%0ANotes:%20${encodeURIComponent(notes)}%0A%0APlease%20confirm%20availability.`;
+          const message = `Hello,%20I%20would%20like%20to%20order%20a%20cake.%0A%0AName:%20${encodeURIComponent(name)}%0APhone:%20${encodeURIComponent(phone)}%0ACake%20Type:%20${encodeURIComponent(cakeType)}%0AFlavour:%20${encodeURIComponent(cakeFlavour)}%0ASize:%20${encodeURIComponent(cakeSize)}%0ADelivery%20Address:%20${encodeURIComponent(deliveryAddress)}%0ADelivery%20Date:%20${encodeURIComponent(deliveryDate)}%0ADelivery%20Time:%20${encodeURIComponent(deliveryTime)}%0ANotes:%20${encodeURIComponent(notes)}%0A%0APlease%20confirm%20availability.`;
         const waUrl = `https://wa.me/919264440016?text=${message}`;
           window.open(waUrl, "_blank");
         });
